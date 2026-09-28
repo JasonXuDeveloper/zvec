@@ -59,9 +59,6 @@ static const AILEGO_ALIGNED(32) int8_t Int4ConvertTable[32] = {
 #define FMA_FP32_GENERAL(m, q, sum) sum += (m * q);
 
 //! Calculate Fused-Multiply-Add (NEON)
-#define FMA_FP16_NEON(v_m, v_q, v_sum) v_sum = vfmaq_f16(v_sum, v_m, v_q);
-
-//! Calculate Fused-Multiply-Add (NEON)
 #define FMA_FP32_NEON(v_m, v_q, v_sum) v_sum = vfmaq_f32(v_sum, v_m, v_q);
 
 //! Calculate Fused-Multiply-Add (GENERAL)
@@ -190,7 +187,6 @@ static const AILEGO_ALIGNED(32) int8_t Int4ConvertTable[32] = {
   }
 
 #define ACCUM_FP16_STEP_GENERAL FMA_FP16_GENERAL
-#define ACCUM_FP16_STEP_NEON FMA_FP16_NEON
 
 #define ACCUM_FP32_STEP_SSE FMA_FP32_SSE
 #define ACCUM_FP32_STEP_AVX FMA_FP32_AVX
