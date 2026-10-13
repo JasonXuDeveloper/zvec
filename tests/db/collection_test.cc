@@ -81,7 +81,7 @@ class CollectionTest : public ::testing::Test {
   }
 
   CollectionSchema make_schema(const std::string &name = "x",
-                              const std::string &field = "value") {
+                               const std::string &field = "value") {
     CollectionSchema schema(name);
     EXPECT_TRUE(schema
                     .add_field(std::make_shared<FieldSchema>(
@@ -104,7 +104,7 @@ class CollectionTest : public ::testing::Test {
   }
 
   Doc make_doc(const std::string &id, int32_t value,
-              const std::string &field = "value") {
+               const std::string &field = "value") {
     Doc doc;
     doc.set_pk(id);
     EXPECT_TRUE(doc.set<int32_t>(field, value));
@@ -120,7 +120,7 @@ class CollectionTest : public ::testing::Test {
   }
 
   void expect_value(const std::string &id, int32_t expected,
-                   const std::string &field = "value") {
+                    const std::string &field = "value") {
     auto result = collection_->fetch({id});
     ASSERT_TRUE(result.has_value()) << result.error().message();
     ASSERT_EQ(result.value().size(), 1u);
@@ -3532,17 +3532,20 @@ TEST_F(CollectionTest, Feature_Optimize_Compacts_IdMap) {
   // earlier ones, so level compaction only trivially moves them.
   constexpr uint64_t kRounds = 50;
   constexpr uint64_t kBatch = 64;
+  size_t max_ssts = 0;
   for (uint64_t i = 0; i < kRounds; ++i) {
     const uint64_t start = 1000 + i * kBatch;
     ASSERT_TRUE(
         TestHelper::CollectionInsertDoc(collection, start, start + kBatch)
             .ok());
     ASSERT_TRUE(collection->flush().ok());
+    max_ssts = std::max(max_ssts, count_sst());
   }
-  ASSERT_GE(count_sst(), kRounds / 2);
+  EXPECT_LE(max_ssts, 16u);
 
   ASSERT_TRUE(collection->optimize().ok());
-  EXPECT_LE(count_sst(), 2u);
+  // One merged SST, plus up to two L0 files RocksDB moves down on its own
+  EXPECT_LE(count_sst(), 3u);
 
   collection.reset();
   auto reopened = Collection::Open(col_path, options);

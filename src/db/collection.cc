@@ -945,7 +945,7 @@ Status CollectionImpl::optimize(const OptimizeOptions &options) {
   }
 
   // Phase 2: lock-free optimize. Readers and writers proceed freely.
-  // Flushes never merge ID-map SSTs when primary keys only ascend.
+  // Merge the small ID-map SSTs that flushes leave below their threshold.
   // Compact first so a failure leaves no tmp segment dirs behind.
   auto s = id_map_->compact();
   CHECK_RETURN_STATUS(s);
